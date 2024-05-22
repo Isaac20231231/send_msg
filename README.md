@@ -27,14 +27,10 @@ cd plugins/file_writer
 pip install -r requirements.txt
 ```
 
-## 配置
+## data.json文件介绍
 
-`file_writer` 插件数据依赖于 `data.json` 文件进行配置。请按照以下步骤进行配置：
-
-1. 复制 `data.json.template` 文件并重命名为 `config.json`。
-2. 在 `data.json` 文件中，添加您希望发送的微信消息（支持群聊消息，个人消息）。 例如：
-ps: 一般data.json文件里的数据是有api调用写入，不用手动写入，如果只是为了测试消息是否会发送，手动写入data.json文件
-   ```json
+`file_writer` 插件数据依赖于 `data.json` 文件进行读取。
+   ```data.json
    [
    {
    "receiver_name": "",
@@ -48,11 +44,11 @@ ps: 一般data.json文件里的数据是有api调用写入，不用手动写入�
    }
    ]
    ```
-   参数说明:
+   ### 参数说明:
     - `receiver_name`: 接收者的微信备注名
     - `message`: 消息内容
     - `group_name`: 群聊名称
-   发送个人消息时，`group_name`为空，填写`receiver_name`,`message`即可。
+   发送个人消息时，`group_name`为空，填写`receiver_name`,`message`即可。<br>
    发送群聊消息时，`group_name`,`message`必填,`receiver_name`可选，填写`微信备注名`时，发送@某人消息，填写`所有人`发送@所有人消息,不填写不@。
 
 
