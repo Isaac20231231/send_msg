@@ -79,6 +79,9 @@ ps: 一般data.json文件里的数据是有api调用写入，不用手动写入�
 <img src="API截图.png" width="600" >
 <img src="微信消息截图.png" width="600">
 
+## 联系作者
+电话: 18300639062（wx同号）
+
 ## 贡献
 
 如果您有任何改进意见或功能请求，请随时提交 Pull Request 或创建 Issue。
