@@ -2,14 +2,25 @@
 
 ## 简介
 
-`file_writer` 插件用于实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，watch_dog.py监听文件变化，有内容时触发发送消息到微信。
+`file_writer` 插件用于[chatgpt-on-wechat](https://github.com/hanfangyuan4396/dify-on-wechat)项目。实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，watch_dog.py监听文件变化，有内容时触发发送消息到微信。
 
 ## 安装
 
 此插件作为微信聊天机器人系统的一部分，需要将其放置在正确的插件目录下：
 
-1. 将 `file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
-2. 确保 `__init__.py`,`file_writer.py`和`watch_dog.py` 文件位于 `file_writer` 文件夹中。
+1. 下载插件,访问插件[仓库地址](https://github.com/Isaac20231231/file_writer)
+2. 手动下载压缩包,将`file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
+3. 微信执行命令  
+   ```sh
+   #installp https://github.com/wangxyd/nicesuno.git
+   #scanp
+   ```
+4. 进入`plugins` 目录克隆
+```sh
+git clone https://github.com/Isaac20231231/file_writer.git
+```
+5. 确保 `__init__.py`,`file_writer.py`和`watch_dog.py` 文件位于 `file_writer` 文件夹中。
+6. 安装插件相关依赖`pip install -r requirements.txt`。
 
 ## 配置
 
