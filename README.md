@@ -1,34 +1,56 @@
-# GroupInvitation 插件
+# file_writer 插件
 
 ## 简介
 
-`GroupInvitation` 插件允许您的聊天机器人根据特定关键词自动邀请用户加入指定的群聊。这个插件适用于需要基于用户消息内容自动处理群聊邀请的场景。
+`file_writer` 插件用于实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，微信channel监听文件变化，有内容时触发发送消息到微信。
 
 ## 安装
 
-此插件作为聊天机器人系统的一部分，需要将其放置在正确的插件目录下：
+此插件作为微信聊天机器人系统的一部分，需要将其放置在正确的插件目录下：
 
-1. 将 `group_invitation` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
-2. 确保 `__init__.py` 和 `group_invitation.py` 文件位于 `group_invitation` 文件夹中。
+1. 将 `file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
+2. 确保 `__init__.py` 和 `file_writer.py` 文件位于 `file_writer` 文件夹中。
 
 ## 配置
 
-`GroupInvitation` 插件依赖于 `config.json` 文件进行配置。请按照以下步骤进行配置：
+`file_writer` 插件数据依赖于 `data.json` 文件进行配置。请按照以下步骤进行配置：
 
-1. 复制 `config.json.template` 文件并重命名为 `config.json`。
-2. 在 `config.json` 文件中，添加您希望机器人响应的关键词和对应的群聊名称。例如：
-
+1. 复制 `data.json.template` 文件并重命名为 `config.json`。
+2. 在 `data.json` 文件中，添加您希望发送的微信消息（支持群聊消息，个人消息）。 例如：
+ps: 一般data.json文件里的数据是有api调用写入，不用手动写入，如果只是为了测试消息是否会发送，手动写入data.json文件
    ```json
+   [
    {
-       "群聊": "我的群聊"
+   "receiver_name": "",
+   "message": "这是一条测试消息",
+   "group_name": "测试群"
+   }, 
+   {
+    "receiver_name": "小明",
+    "message": "这是一条测试消息",
+    "group_name": ""
    }
+   ]
    ```
+   参数说明:
+    - `receiver_name`: 接收者的微信备注名
+    - `message`: 消息内容
+    - `group_name`: 群聊名称
+   发送个人消息时，`group_name`为空，填写`receiver_name`,`message`即可。
+   发送群聊消息时，`group_name`,`message`必填,`receiver_name`可选，填写`微信备注名`时，发送@某人消息，填写`所有人`发送@所有人消息,不填写不@。
 
-   这意味着当用户发送包含“群聊”这一关键词的消息时，机器人将尝试邀请该用户加入名为“我的群聊”的群组。
 
 ## 使用
 
-安装并正确配置插件后，当机器人收到包含特定关键词的消息时，它将自动触发群聊邀请流程。
+安装并正确配置插件后，您可以通过以下方式使用：
+打开postman，请求api接口127.0.0.1:8899/send_message，发送消息到微信
+```json
+{
+    "receiver_name": "",
+    "message": "这是一条测试消息",
+    "group_name": "测试群"
+}
+```
 
 ## 贡献
 
