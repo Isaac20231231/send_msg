@@ -34,24 +34,6 @@ def validate_data(data_list):
 class FileWriter(Plugin):
     def __init__(self):
         super().__init__()
-        try:
-            self.conf = super().load_config()
-            if not self.conf:
-                curdir = os.path.dirname(__file__)
-                # 配置文件路径
-                config_path = os.path.join(curdir, "data.json")
-
-                # 加载或创建配置文件
-                if os.path.exists(config_path):
-                    with open(config_path, "r") as f:
-                        self.conf = json.load(f)
-                else:
-                    self.conf = {}
-                    with open(config_path, "w") as f:
-                        json.dump(self.conf, f, indent=4)
-        except Exception as e:
-            logger.warn("[file_writer] init failed, ignore.")
-            raise e
 
     @staticmethod
     @app.route('/send_message', methods=['POST'])

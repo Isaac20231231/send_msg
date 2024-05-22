@@ -2,14 +2,14 @@
 
 ## 简介
 
-`file_writer` 插件用于实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，微信channel监听文件变化，有内容时触发发送消息到微信。
+`file_writer` 插件用于实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，watch_dog.py监听文件变化，有内容时触发发送消息到微信。
 
 ## 安装
 
 此插件作为微信聊天机器人系统的一部分，需要将其放置在正确的插件目录下：
 
 1. 将 `file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
-2. 确保 `__init__.py` 和 `file_writer.py` 文件位于 `file_writer` 文件夹中。
+2. 确保 `__init__.py`,`file_writer.py`和`watch_dog.py` 文件位于 `file_writer` 文件夹中。
 
 ## 配置
 
@@ -43,7 +43,8 @@ ps: 一般data.json文件里的数据是有api调用写入，不用手动写入�
 ## 使用
 
 安装并正确配置插件后，您可以通过以下方式使用：
-打开postman，请求api接口127.0.0.1:8899/send_message，发送消息到微信
+打开postman，请求api接口"http://127.0.0.1:8899/send_message"
+发送消息到微信
 ```json
 {
     "receiver_name": "",
@@ -51,6 +52,14 @@ ps: 一般data.json文件里的数据是有api调用写入，不用手动写入�
     "group_name": "测试群"
 }
 ```
+成功返回：
+```json
+{
+    "message": "发送成功",
+    "status": "success"
+}
+```
+异常返回参考file_writer.py文件里的validate_data函数
 
 ## 贡献
 
