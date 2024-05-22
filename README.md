@@ -7,15 +7,15 @@
 ## 安装
 
 此插件作为微信聊天机器人系统的一部分，需要将其放置在正确的插件目录下：
-### 安装方法
-1. 下载插件,访问插件[仓库地址](https://github.com/Isaac20231231/file_writer)
-2. 手动下载压缩包,将`file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
-3. 微信执行命令  
+### 安装方法（三种方式）
+下载插件,访问插件[仓库地址](https://github.com/Isaac20231231/file_writer)
+##### 第一种:手动下载压缩包,将`file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
+#### 第二种:微信执行命令  
    ```sh
    #installp https://github.com/Isaac20231231/file_writer.git
    #scanp
    ```
-4. 进入`plugins` 目录克隆
+#### 第三种:进入`plugins` 目录克隆
 ```sh
 git clone https://github.com/Isaac20231231/file_writer.git
 ```
