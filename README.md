@@ -21,7 +21,11 @@ git clone https://github.com/Isaac20231231/file_writer.git
 ```
 ### 注意事项
 1. 确保 `__init__.py`,`file_writer.py`和`watch_dog.py` 文件位于 `file_writer` 文件夹中。
-2. 安装插件相关依赖`pip install -r requirements.txt`。
+2. 安装插件相关依赖 `pip install -r requirements.txt`。
+```sh
+cd plugins/file_writer
+pip install -r requirements.txt
+```
 
 ## 配置
 
