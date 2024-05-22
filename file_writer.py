@@ -26,7 +26,7 @@ def validate_data(data_list):
 @register(
     name="file_writer",
     desire_priority=120,
-    hidden=True,
+    hidden=False,
     desc="写入文件api",
     version="1.0",
     author="Isaac",
@@ -60,7 +60,7 @@ class FileWriter(Plugin):
             return jsonify({'status': 'error', 'message': '服务器内部错误'}), 500
 
     def get_help_text(self, **kwargs):
-        return "写入文件api插件"
+        return "写入文件api插件,用来手动发送微信通知"
 
     # 启动Flask服务器的函数
     @staticmethod

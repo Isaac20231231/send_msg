@@ -110,7 +110,7 @@ def send_message():
     """
     发送消息
     """
-    # 创建看门狗实例，监控 message.json 文件，每隔5秒检查一次，有变化时调用 handle_message 处理
+    # 创建看门狗实例，监控 data.json 文件，每隔5秒检查一次，有变化时调用 handle_message 处理
     # curdir = Path(__file__).parent.parent.parent
     curdir = os.path.dirname(__file__)
     file_path = os.path.join(curdir, "data.json")
