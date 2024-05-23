@@ -2,7 +2,9 @@
 
 ## 简介
 
-`file_writer` 插件用于[chatgpt-on-wechat](https://github.com/hanfangyuan4396/dify-on-wechat)项目。实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，watch_dog.py监听文件变化，有内容时触发发送消息到微信。
+`file_writer` 插件用于[chatgpt-on-wechat](https://github.com/hanfangyuan4396/dify-on-wechat)项目。<br>
+实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，
+
 
 ## 安装
 
@@ -20,7 +22,7 @@
 git clone https://github.com/Isaac20231231/file_writer.git
 ```
 ### 注意事项
-1. 确保 `__init__.py`,`file_writer.py`和`watch_dog.py` 文件位于 `file_writer` 文件夹中。
+1. 确保 `__init__.py`,`file_writer.py`和`file_watcher.py` 文件位于 `file_writer` 文件夹中。
 2. 安装插件相关依赖 `pip install -r requirements.txt`。
 ```sh
 cd plugins/file_writer
@@ -29,7 +31,7 @@ pip install -r requirements.txt
 
 ## data.json文件介绍
 
-`file_writer` 插件数据依赖于 `data.json` 文件进行读取。
+`file_writer` 插件数据依赖于 `data.json` 文件进行写入。
    ```data.json
    [
    {
@@ -76,6 +78,23 @@ pip install -r requirements.txt
 <img src="API截图.png" width="600" >
 <img src="微信消息截图.png" width="600">
 
+
+# file_watcher插件介绍
+file_watcher.py插件采用watchdog监听文件变化，和file_writer插件相互使用，<br>
+file_writer负责写入文件，file_watcher负责监听文件，有内容时触发发送消息到微信。
+
+## 命令说明
+file_watcher支持以下命令：
+- `$start watchdog` 开启监听
+- `$stop watchdog` 停止监听
+- `$check watchdog` 查看监听状态
+
+<img src="文件监听命令示例.png" width="600">
+
+## 使用
+插件默认不启动监听，需要手动启动监听，监听文件为data.json文件，当data.json文件有内容时，触发发送消息到微信。
+启动方式看上方,成功效果如下
+<img src="监听文件效果.png" width="600">
 ## 联系作者
 电话: 18300639062（wx同号）
 

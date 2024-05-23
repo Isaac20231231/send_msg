@@ -65,7 +65,7 @@ class FileWriter(Plugin):
     # 启动Flask服务器的函数
     @staticmethod
     def run_flask_app():
-        app.run(host='0.0.0.0', port=8899, debug=False)
+        app.run(host='0.0.0.0', port=5688, debug=False)
 
     # 在单独的线程中启动Flask服务器
     flask_thread = threading.Thread(target=run_flask_app)
