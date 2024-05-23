@@ -56,6 +56,7 @@ pip install -r requirements.txt
 
 安装并正确配置插件后，您可以通过以下方式使用：
 打开postman，请求api接口"http://127.0.0.1:8899/send_message"
+ps:127.0.0.1是本机ip，如果是部署服务器要改成服务器ip地址，8899是端口号，如果修改了端口号要改成对应的端口号（端口号可以在run_flask_app()修改端口启动）
 发送消息到微信
 ```json
 {
