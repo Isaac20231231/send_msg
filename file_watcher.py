@@ -20,7 +20,7 @@ class FileChangeHandler(FileSystemEventHandler):
     name="file_watcher",
     desire_priority=180,
     hidden=True,
-    desc="watchdog监听文件变化插件",
+    desc="watchdog监听文件变化发送消息&微信命令发送消息",
     version="0.1",
     author="Isaac"
 )
@@ -66,6 +66,45 @@ class FileWatcherPlugin(Plugin):
                 reply.content = "watchdog 没在运行,如需启动:启动命令 $start watchdog."
                 e_context['reply'] = reply
             e_context.action = EventAction.BREAK_PASS
+        elif content.startswith("$send_msg"):
+            try:
+                parts = content.split(' ', 2)
+                receiver_name = parts[1].strip()
+                message = parts[2].strip()
+
+                group_name = None
+
+                # 判断是否是群聊
+                group_start = message.find('group[')  # 查找群聊标识
+                if group_start != -1:
+                    group_end = message.find(']', group_start)  # 查找群聊结束标识
+                    if group_end != -1:
+                        group_name = message[group_start + 6:group_end]
+                        message = message[:group_start].strip()
+
+                # 判断是否@所有人
+                if receiver_name == "所有人" or receiver_name == "all":
+                    receiver_name = "所有人"
+                elif group_name:
+                    # 如果是群聊,但没有@所有人,那么接收者名字就是@的那个人
+                    # 如果没有@任何人,那么接收者名字就是None
+                    if receiver_name not in ["所有人", "all"]:
+                        friends = itchat.search_friends(remarkName=receiver_name)
+                        if not friends:
+                            receiver_name = None
+
+                self.send_message(receiver_name, message, group_name)
+
+                reply = Reply()
+                reply.type = ReplyType.INFO
+                reply.content = "消息发送成功."
+                e_context['reply'] = reply
+            except Exception as e:
+                reply = Reply()
+                reply.type = ReplyType.ERROR
+                reply.content = f"消息发送失败: {str(e)}"
+                e_context['reply'] = reply
+            e_context.action = EventAction.BREAK_PASS
 
     def start_watch(self):
         if not self.observer.is_alive():
@@ -101,18 +140,29 @@ class FileWatcherPlugin(Plugin):
             content = data["message"]  # 获取消息内容
             group_name = data["group_name"]  # 获取群聊名称
 
-            # 判断是否是群聊
+            self.send_message(receiver_name, content, group_name)
+        except Exception as e:
+            logger.error(f"处理消息时发生异常: {e}")
+
+    def send_message(self, receiver_name, content, group_name=None):
+        try:
             if group_name:
-                chatroom = itchat.search_chatrooms(name=group_name)[0]  # 根据群聊名称查找群聊
-                if receiver_name:
-                    if receiver_name == "所有人" or receiver_name == "all":
-                        content = f"@所有人 {content}"  # 拼接消息内容
+                chatrooms = itchat.search_chatrooms(name=group_name)
+                if not chatrooms:
+                    raise ValueError(f"没有找到对应的群聊：{group_name}")
+                chatroom = chatrooms[0]
+                if receiver_name == "所有人":
+                    content = f"@所有人 {content}"  # 拼接消息内容
+                elif receiver_name:
+                    # 发送群聊消息,并且@指定好友
+                    friends = itchat.search_friends(remarkName=receiver_name)
+                    if friends:
+                        nickname = friends[0].NickName
+                        content = f"@{nickname} {content}"  # 拼接消息内容
                     else:
-                        # 发送群聊消息,并且@指定好友
-                        friends = itchat.search_friends(remarkName=receiver_name)
-                        if friends:
-                            nickname = friends[0].NickName
-                            content = f"@{nickname} {content}"  # 拼接消息内容
+                        raise ValueError(f"在群聊 {group_name} 中没有找到对应的好友：{receiver_name}")
+                elif receiver_name is None:
+                    content = f"{content}"  # 拼接消息内容
                 itchat.send(content, chatroom.UserName)
                 logger.info(f"手动发送微信群聊消息成功, 发送群聊:{group_name} 消息内容：{content}")
             else:
@@ -121,9 +171,16 @@ class FileWatcherPlugin(Plugin):
                     itchat.send(content, remarkName[0].UserName)
                     logger.info(f"手动发送微信消息成功, 发送人:{remarkName[0].NickName} 消息内容：{content}")
                 else:
-                    logger.error(f"没有找到对应的好友：{remarkName}")
+                    raise ValueError(f"没有找到对应的好友：{receiver_name}")
         except Exception as e:
             logger.error(f"处理消息时发生异常: {e}")
+            raise e
 
     def get_help_text(self, **kwargs):
-        return "watchdog监听文件变化插件,监听data.json文件变化发送微信通知."
+        return ("1.watchdog监听文件变化插件,监听data.json文件变化发送微信通知.\n"
+                "启动监听: $start watchdog\n停止监听: $stop watchdog\n查看监听状态: $check watchdog\n\n"
+                "2.微信命令发送消息: \n"
+                "2.1 发送个人消息: \n$send_msg [微信备注名] [消息内容]\n"
+                "2.2 发送群聊消息@指定人: \n$send_msg [微信备注名] [消息内容] group[群聊名字]\n"
+                "2.3 发送群聊消息@所有人: \n$send_msg 所有人 [消息内容] group[群聊名字]\n"
+                "2.4 发送群聊消息不@任何人: \n$send_msg [消息内容] group[群聊名字]")

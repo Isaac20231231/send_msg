@@ -34,10 +34,11 @@ def validate_data(data_list):
 class FileWriter(Plugin):
     def __init__(self):
         super().__init__()
+        self.flask_thread = threading.Thread(target=self.run_flask_app)
+        self.flask_thread.start()
 
-    @staticmethod
     @app.route('/send_message', methods=['POST'])
-    def send_message():
+    def send_message(self):
         try:
             # 获取请求中的数据
             data_list = request.json.get('data_list', [])  # 获取消息列表
@@ -50,7 +51,7 @@ class FileWriter(Plugin):
             # 配置文件路径
             config_path = os.path.join(curdir, "data.json")
             # 将数据写入到message.json文件中
-            with open(config_path, 'w') as file:
+            with open(config_path, 'w', encoding='utf-8') as file:
                 json.dump(data_list, file, ensure_ascii=False)
             logger.info(f"写入成功,写入内容{data_list}")
 
@@ -63,10 +64,5 @@ class FileWriter(Plugin):
         return "写入文件api插件,用来手动发送微信通知"
 
     # 启动Flask服务器的函数
-    @staticmethod
-    def run_flask_app():
+    def run_flask_app(self):
         app.run(host='0.0.0.0', port=5688, debug=False)
-
-    # 在单独的线程中启动Flask服务器
-    flask_thread = threading.Thread(target=run_flask_app)
-    flask_thread.start()
