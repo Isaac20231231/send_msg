@@ -5,6 +5,8 @@
 `file_writer` 插件用于[chatgpt-on-wechat](https://github.com/hanfangyuan4396/dify-on-wechat)项目。<br>
 实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，
 
+## python版本
+python3.11 目前发现有低版本不兼容的问题，建议使用3.11版本
 
 ## 安装
 
