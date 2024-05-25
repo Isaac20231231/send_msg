@@ -126,26 +126,29 @@ class FileWatcherPlugin(Plugin):
 
     def handle_message(self):
         try:
-            with open(self.file_path, 'r') as file:
-                data_list = json.load(file)
-                for data in data_list:
-                    self.process_message(data)
-            with open(self.file_path, 'w') as file:
-                file.write('')
+            with open(self.file_path, 'r', encoding='utf-8') as file:
+                data = file.read().strip()
+                if data:  # 判断文件内容是否为空
+                    data_list = json.loads(data)
+                    for data in data_list:
+                        self.process_message(data)
+                    with open(self.file_path, 'w', encoding='utf-8') as file:
+                        file.write('')
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"读取文件 {self.file_path} 出错: {e}")
 
     def process_message(self, data):
         try:
-            receiver_names = data["receiver_names"]  # 获取接收者名称列表
+            receiver_name = data["receiver_name"]  # 获取接收者名称
             content = data["message"]  # 获取消息内容
-            group_names = data["group_names"]  # 获取群聊名称列表
+            group_name = data["group_name"]  # 获取群聊名称
 
-            self.send_message(receiver_names, content, group_names)
+            self.send_message(receiver_name, content, group_name)
         except Exception as e:
             logger.error(f"处理消息时发生异常: {e}")
 
     def send_message(self, receiver_names, content, group_names=None):
+        global remarkName
         try:
             if group_names:
                 for group_name in group_names:
