@@ -32,6 +32,7 @@ class FileWatcherPlugin(Plugin):
         self.file_path = os.path.join(curdir, "data.json")
         self.observer = Observer()
         self.event_handler = FileChangeHandler(self.handle_message)
+        self.start_watch()  # 默认启动 watchdog 监听
 
     def on_handle_context(self, e_context: EventContext):
         if e_context['context'].type != ContextType.TEXT:
@@ -68,32 +69,32 @@ class FileWatcherPlugin(Plugin):
             e_context.action = EventAction.BREAK_PASS
         elif content.startswith("$send_msg"):
             try:
-                parts = content.split(' ', 2)
-                receiver_name = parts[1].strip()
-                message = parts[2].strip()
+                # 提取接收者名称列表
+                receiver_start = content.find('[')
+                receiver_end = content.find(']', receiver_start)
+                if receiver_start != -1 and receiver_end != -1:
+                    receiver_names = [name.strip() for name in content[receiver_start + 1:receiver_end].split(',')]
+                    content = content[receiver_end + 1:].strip()
+                else:
+                    receiver_names = []
 
-                group_name = None
-
-                # 判断是否是群聊
-                group_start = message.find('group[')  # 查找群聊标识
+                # 提取群聊名称列表
+                group_start = content.find('group[')
                 if group_start != -1:
-                    group_end = message.find(']', group_start)  # 查找群聊结束标识
+                    group_end = content.find(']', group_start)
                     if group_end != -1:
-                        group_name = message[group_start + 6:group_end]
-                        message = message[:group_start].strip()
+                        group_names = [name.strip() for name in content[group_start + 6:group_end].split(',')]
+                        content = content[:group_start].strip()
+                    else:
+                        group_names = []
+                else:
+                    group_names = []
 
                 # 判断是否@所有人
-                if receiver_name == "所有人" or receiver_name == "all":
-                    receiver_name = "所有人"
-                elif group_name:
-                    # 如果是群聊,但没有@所有人,那么接收者名字就是@的那个人
-                    # 如果没有@任何人,那么接收者名字就是None
-                    if receiver_name not in ["所有人", "all"]:
-                        friends = itchat.search_friends(remarkName=receiver_name)
-                        if not friends:
-                            receiver_name = None
+                if "所有人" in receiver_names or "all" in receiver_names:
+                    receiver_names = ["所有人"]
 
-                self.send_message(receiver_name, message, group_name)
+                self.send_message(receiver_names, content, group_names)
 
                 reply = Reply()
                 reply.type = ReplyType.INFO
@@ -136,51 +137,59 @@ class FileWatcherPlugin(Plugin):
 
     def process_message(self, data):
         try:
-            receiver_name = data["receiver_name"]  # 获取接收者名称
+            receiver_names = data["receiver_names"]  # 获取接收者名称列表
             content = data["message"]  # 获取消息内容
-            group_name = data["group_name"]  # 获取群聊名称
+            group_names = data["group_names"]  # 获取群聊名称列表
 
-            self.send_message(receiver_name, content, group_name)
+            self.send_message(receiver_names, content, group_names)
         except Exception as e:
             logger.error(f"处理消息时发生异常: {e}")
 
-    def send_message(self, receiver_name, content, group_name=None):
+    def send_message(self, receiver_names, content, group_names=None):
         try:
-            if group_name:
-                chatrooms = itchat.search_chatrooms(name=group_name)
-                if not chatrooms:
-                    raise ValueError(f"没有找到对应的群聊：{group_name}")
-                chatroom = chatrooms[0]
-                if receiver_name == "所有人":
-                    content = f"@所有人 {content}"  # 拼接消息内容
-                elif receiver_name:
-                    # 发送群聊消息,并且@指定好友
-                    friends = itchat.search_friends(remarkName=receiver_name)
-                    if friends:
-                        nickname = friends[0].NickName
-                        content = f"@{nickname} {content}"  # 拼接消息内容
+            if group_names:
+                for group_name in group_names:
+                    chatrooms = itchat.search_chatrooms(name=group_name)
+                    if not chatrooms:
+                        raise ValueError(f"没有找到对应的群聊：{group_name}")
+                    chatroom = chatrooms[0]
+                    if receiver_names and receiver_names != ['']:
+                        for receiver_name in receiver_names:
+                            if receiver_name == "所有人":
+                                content_at = f"@所有人 {content}"  # 拼接消息内容
+                            else:
+                                friends = itchat.search_friends(remarkName=receiver_name)
+                                if friends:
+                                    nickname = friends[0].NickName
+                                    content_at = f"@{nickname} {content}"  # 拼接消息内容
+                                else:
+                                    raise ValueError(f"在群聊 {group_name} 中没有找到对应的好友：{receiver_name}")
+                            itchat.send(content_at, chatroom.UserName)
+                            logger.info(
+                                f"手动发送微信群聊消息成功, 发送群聊:{group_name}, 接收者:{receiver_name}, 消息内容：{content}")
                     else:
-                        raise ValueError(f"在群聊 {group_name} 中没有找到对应的好友：{receiver_name}")
-                elif receiver_name is None:
-                    content = f"{content}"  # 拼接消息内容
-                itchat.send(content, chatroom.UserName)
-                logger.info(f"手动发送微信群聊消息成功, 发送群聊:{group_name} 消息内容：{content}")
+                        itchat.send(content, chatroom.UserName)
+                        logger.info(f"手动发送微信群聊消息成功, 发送群聊:{group_name}, 消息内容：{content}")
             else:
-                remarkName = itchat.search_friends(remarkName=receiver_name)  # 根据好友备注名查找好友
-                if remarkName:
-                    itchat.send(content, remarkName[0].UserName)
-                    logger.info(f"手动发送微信消息成功, 发送人:{remarkName[0].NickName} 消息内容：{content}")
+                if receiver_names and receiver_names != ['']:
+                    for receiver_name in receiver_names:
+                        remarkName = itchat.search_friends(remarkName=receiver_name)  # 根据好友备注名查找好友
+                        if remarkName:
+                            itchat.send(content, remarkName[0].UserName)
+                            logger.info(f"手动发送微信消息成功, 发送人:{remarkName[0].NickName} 消息内容：{content}")
+                        else:
+                            raise ValueError(f"没有找到对应的好友：{receiver_name}")
                 else:
-                    raise ValueError(f"没有找到对应的好友：{receiver_name}")
+                    raise ValueError("接收者列表为空,无法发送个人消息")
         except Exception as e:
             logger.error(f"处理消息时发生异常: {e}")
             raise e
 
     def get_help_text(self, **kwargs):
-        return ("1.watchdog监听文件变化插件,监听data.json文件变化发送微信通知.\n"
+        return ("1.watchdog监听文件变化插件,监听data.json文件变化发送微信通知.(默认启动)\n"
                 "启动监听: $start watchdog\n停止监听: $stop watchdog\n查看监听状态: $check watchdog\n\n"
                 "2.微信命令发送消息: \n"
-                "2.1 发送个人消息: \n$send_msg [微信备注名] [消息内容]\n"
-                "2.2 发送群聊消息@指定人: \n$send_msg [微信备注名] [消息内容] group[群聊名字]\n"
-                "2.3 发送群聊消息@所有人: \n$send_msg 所有人 [消息内容] group[群聊名字]\n"
-                "2.4 发送群聊消息不@任何人: \n$send_msg [消息内容] group[群聊名字]")
+                "2.1 发送个人消息: \n$send_msg [微信备注名1,微信备注名2] 消息内容\n"
+                "2.2 发送群聊消息@指定人: \n$send_msg [微信备注名1,微信备注名2] 消息内容 group[群聊名称1,群聊名称2]\n"
+                "2.3 发送群聊消息@所有人: \n$send_msg [所有人] 消息内容 group[群聊名称1,群聊名称2]\n"
+                "2.4 发送群聊消息不@任何人: \n$send_msg [] 消息内容 group[群聊名称1,群聊名称2]")
