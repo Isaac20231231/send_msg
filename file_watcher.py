@@ -150,6 +150,10 @@ class FileWatcherPlugin(Plugin):
     def send_message(self, receiver_names, content, group_names=None):
         global remarkName
         try:
+            # 更新 itchat 的内部缓存
+            itchat.get_friends(update=True)
+            itchat.get_chatrooms(update=True)
+
             if group_names:
                 for group_name in group_names:
                     chatrooms = itchat.search_chatrooms(name=group_name)
