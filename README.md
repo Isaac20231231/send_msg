@@ -17,19 +17,19 @@ python3.11 目前发现有低版本不兼容的问题，建议使用3.11版本
 
 下载插件,访问插件[仓库地址](https://github.com/Isaac20231231/file_writer)
 
-#### 第一种:手动下载压缩包,将`file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中。
+#### 第一种:手动下载压缩包,将`file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中（注意需要修改文件夹名称，会自动带上main分支）。
 
 #### 第二种:微信执行命令
 
    ```sh
-   #installp https://github.com/Isaac20231231/file_writer.git
+   #installp https://github.com/Isaac20231231/send_msg.git
    #scanp
    ```
 
 #### 第三种:进入`plugins` 目录克隆
 
 ```sh
-git clone https://github.com/Isaac20231231/file_writer.git
+git clone https://github.com/Isaac20231231/send_msg.git
 ```
 
 ### 注意事项
