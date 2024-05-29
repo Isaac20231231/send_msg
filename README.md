@@ -38,7 +38,7 @@ git clone https://github.com/Isaac20231231/send_msg.git
 2. 安装插件相关依赖 `pip install -r requirements.txt`。
 
 ```sh
-cd plugins/file_writer
+cd plugins/send_msg
 pip install -r requirements.txt
 ```
 
