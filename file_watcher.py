@@ -1,3 +1,4 @@
+import requests
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from bridge.context import ContextType
@@ -21,7 +22,7 @@ class FileChangeHandler(FileSystemEventHandler):
     desire_priority=180,
     hidden=True,
     desc="watchdog监听文件变化发送消息&微信命令发送消息",
-    version="0.1",
+    version="2.1",
     author="Isaac"
 )
 class FileWatcherPlugin(Plugin):
@@ -147,12 +148,82 @@ class FileWatcherPlugin(Plugin):
         except Exception as e:
             logger.error(f"处理消息时发生异常: {e}")
 
+    # 下载文件到本地的函数
+    def download_file(self, url):
+        """
+        下载文件到本地
+        :param url: 文件的URL
+        """
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                # 提取文件名
+                file_name = os.path.basename(url)
+                # 创建临时文件
+                with open(file_name, 'wb') as file:
+                    file.write(response.content)
+                return file_name
+            else:
+                return None
+        except Exception as e:
+            logger.error(f"下载文件时发生异常: {e}")
+            return None
+
+    # 定义发送消息的函数
+    def send_msg(self, msg_type, content, to_user_name, at_content=None):
+        """
+        实际发送消息函数
+        :param msg_type: 消息类型
+        :param content: 消息内容
+        :param to_user_name: 接收者的 UserName
+        :param at_content: @的内容
+        """
+        if msg_type == 'text':
+            if at_content:
+                itchat.send(f'{at_content} {content}', to_user_name)
+            else:
+                itchat.send(content, to_user_name)
+        elif msg_type in ['img', 'video', 'file']:
+            # 如果是图片、视频或文件,先下载到本地
+            local_file_path = self.download_file(content)
+            if local_file_path:
+                itchat.send(at_content, to_user_name)
+                if msg_type == 'img':
+                    itchat.send_image(local_file_path, to_user_name)
+                elif msg_type == 'video':
+                    itchat.send_video(local_file_path, to_user_name)
+                elif msg_type == 'file':
+                    itchat.send_file(local_file_path, to_user_name)
+                # 发送完成后删除本地临时文件
+                os.remove(local_file_path)
+            else:
+                raise ValueError(f"无法下载文件: {content}")
+
     def send_message(self, receiver_names, content, group_names=None):
-        global remarkName
+        """
+        发送消息
+        :param receiver_names: 接收者名称列表
+        :param content: 消息内容
+        :param group_names: 群聊名称列表
+        """
+        global media_type, content_at
         try:
             # 更新 itchat 的内部缓存
             itchat.get_friends(update=True)
             itchat.get_chatrooms(update=True)
+
+            # 判断消息类型
+            if content.startswith(("http://", "https://")):
+                if content.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".img")):
+                    media_type = "img"
+                elif content.lower().endswith((".mp4", ".avi", ".mov", ".pdf")):
+                    media_type = "video"
+                elif content.lower().endswith((".doc", ".docx", ".xls", "xlsx", ".zip", ".rar", "txt")):
+                    media_type = "file"
+                else:
+                    logger.warning(f"不支持的文件类型: {content}")
+            else:
+                media_type = "text"
 
             if group_names:
                 for group_name in group_names:
@@ -160,30 +231,44 @@ class FileWatcherPlugin(Plugin):
                     if not chatrooms:
                         raise ValueError(f"没有找到对应的群聊：{group_name}")
                     chatroom = chatrooms[0]
-                    if receiver_names and receiver_names != ['']:
+
+                    if receiver_names and any(receiver_names):
                         for receiver_name in receiver_names:
                             if receiver_name == "所有人":
-                                content_at = f"@所有人 {content}"  # 拼接消息内容
+                                content_at = f"@所有人 "
                             else:
-                                friends = itchat.search_friends(remarkName=receiver_name)
-                                if friends:
-                                    nickname = friends[0].NickName
-                                    content_at = f"@{nickname} {content}"  # 拼接消息内容
-                                else:
-                                    raise ValueError(f"在群聊 {group_name} 中没有找到对应的好友：{receiver_name}")
-                            itchat.send(content_at, chatroom.UserName)
+                                # 先去群聊找对应的成员，找不到再去好友列表找（先用微信备注名查找，找不到用微信名）
+                                member_found = False
+                                for member in chatroom.MemberList:
+                                    if member.NickName == receiver_name or member.DisplayName == receiver_name:
+                                        content_at = f"@{member.NickName} "
+                                        member_found = True
+                                        break
+                                if not member_found:
+                                    friends = itchat.search_friends(remarkName=receiver_name)
+                                    if not friends:
+                                        friends = itchat.search_friends(name=receiver_name)
+                                    if friends:
+                                        content_at = f"@{friends[0].NickName} "
+                                        member_found = True
+                                if not member_found:
+                                    raise ValueError(f"在群聊 {group_name} 中没有找到对应的成员：{receiver_name}")
+                            self.send_msg(msg_type=media_type, content=content,
+                                          to_user_name=chatroom.UserName, at_content=content_at)
                             logger.info(
                                 f"手动发送微信群聊消息成功, 发送群聊:{group_name}, 接收者:{receiver_name}, 消息内容：{content}")
                     else:
-                        itchat.send(content, chatroom.UserName)
+                        self.send_msg(media_type, content, chatroom.UserName)
                         logger.info(f"手动发送微信群聊消息成功, 发送群聊:{group_name}, 消息内容：{content}")
             else:
-                if receiver_names and receiver_names != ['']:
+                if receiver_names and any(receiver_names):
                     for receiver_name in receiver_names:
-                        remarkName = itchat.search_friends(remarkName=receiver_name)  # 根据好友备注名查找好友
-                        if remarkName:
-                            itchat.send(content, remarkName[0].UserName)
-                            logger.info(f"手动发送微信消息成功, 发送人:{remarkName[0].NickName} 消息内容：{content}")
+                        friends = itchat.search_friends(remarkName=receiver_name)
+                        if not friends:
+                            friends = itchat.search_friends(name=receiver_name)
+                        if friends:
+                            self.send_msg(media_type, content, friends[0].UserName)
+                            logger.info(f"手动发送微信消息成功, 发送人:{friends[0].NickName} 消息内容：{content}")
                         else:
                             raise ValueError(f"没有找到对应的好友：{receiver_name}")
                 else:
