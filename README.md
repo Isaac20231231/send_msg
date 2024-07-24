@@ -116,6 +116,10 @@ pip install -r requirements.txt
 
 # file_watcher插件介绍
 
+## 注意事项
+发送个人消息时，一定要有好友关系，否则无法发送消息。<br>
+发送群聊消息时，如果出现找不到群聊的情况，要把微信群聊设置成通讯录群聊。
+
 ## 第一种使用
 
 file_watcher.py插件采用watchdog监听文件变化，和file_writer插件相互使用，<br>
