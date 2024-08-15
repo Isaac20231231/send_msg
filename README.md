@@ -1,8 +1,8 @@
-# file_writer 插件
+# file_api服务
 
 ## 简介
 
-`file_writer` 插件用于[chatgpt-on-wechat](https://github.com/hanfangyuan4396/dify-on-wechat)项目。<br>
+`file_api` 插件用于[chatgpt-on-wechat](https://github.com/hanfangyuan4396/dify-on-wechat)项目。<br>
 实现手动发送消息通知到微信功能，写入json消息数据到data.jaon文件里，
 
 ## python版本
@@ -16,9 +16,9 @@ python3.11 目前发现有低版本不兼容的问题，建议使用3.11版本
 
 ### 安装方法（三种方式）
 
-下载插件,访问插件[仓库地址](https://github.com/Isaac20231231/file_writer)
+下载插件,访问插件[仓库地址](https://github.com/Isaac20231231/send_msg)
 
-#### 第一种:手动下载压缩包,将`file_writer` 文件夹复制到您的聊天机器人的 `plugins` 目录中（注意需要修改文件夹名称，会自动带上main分支）。
+#### 第一种:手动下载压缩包,将`send_msg` 文件夹复制到您的聊天机器人的 `plugins` 目录中（注意需要修改文件夹名称，会自动带上main分支）。
 
 #### 第二种:微信执行命令
 
@@ -35,7 +35,7 @@ git clone https://github.com/Isaac20231231/send_msg.git
 
 ### 注意事项
 
-1. 确保 `__init__.py`,`file_writer.py`和`file_watcher.py` 文件位于 `file_writer` 文件夹中。
+1. 确保 `__init__.py`,`file_api.py`和`send_msg.py` 文件位于 `send_msg` 文件夹中。
 2. 安装插件相关依赖 `pip install -r requirements.txt`。
 
 ```sh
@@ -45,7 +45,7 @@ pip install -r requirements.txt
 
 ## data.json文件介绍
 
-`file_writer` 插件数据依赖于 `data.json` 文件进行写入。
+`file_api` 服务数据依赖于 `data.json` 文件进行写入。
 
    ```data.json
  {
@@ -110,11 +110,11 @@ pip install -r requirements.txt
   "status": "success"
 }
 ```
-异常返回参考file_writer.py文件里的validate_data函数
+异常返回参考send_msg.py文件里的validate_data函数
 <img src="API截图.png" width="600" >
 <img src="微信消息截图.png" width="600">
 
-# file_watcher插件介绍
+# send_msg插件介绍
 
 ## 注意事项
 发送个人消息时，一定要有好友关系，否则无法发送消息。<br>
@@ -122,12 +122,12 @@ pip install -r requirements.txt
 
 ## 第一种使用
 
-file_watcher.py插件采用watchdog监听文件变化，和file_writer插件相互使用，<br>
-file_writer负责写入文件，file_watcher负责监听文件，有内容时触发发送消息到微信。
+send_msg.py插件采用watchdog监听文件变化，和file_api服务相互使用，<br>
+file_api负责写入文件，send_msg负责监听文件，有内容时触发发送消息到微信。
 
 ### 命令说明
 
-file_watcher支持以下命令：
+send_msg支持以下命令：
 
 - `$start watchdog` 开启监听
 - `$stop watchdog` 停止监听
@@ -143,12 +143,12 @@ file_watcher支持以下命令：
 
 ## 第二种使用
 
-file_watcher.py插件可以使用微信命令来发送消息到微信，不需要file_writer插件，<br>
+send_msg.py插件可以使用微信命令来发送消息到微信，不需要file_api服务，<br>
 发送消息分两种方式，一种是发送个人消息，一种是发送群聊消息。
 
 ### 命令说明
 
-file_watcher支持以下命令(支持一次性发多人,单人时列表只填一个即可)：
+send_msg支持以下命令(支持一次性发多人,单人时列表只填一个即可)：
 
 - `$send_msg [微信备注名1,微信备注名2] 消息内容` 发送个人消息
 - `$send_msg [微信备注名1,微信备注名2] 消息内容 group[群聊名称1,群聊名称2]` 发送群聊消息,并且@某人
