@@ -1,3 +1,4 @@
+from urllib.parse import unquote
 from flask import Flask, request, jsonify
 import json
 from common.log import logger
@@ -23,6 +24,18 @@ def validate_data(data_list):
 def send_message():
     try:
         data_list = request.json.get('data_list', [])
+        
+        # 对 data_list 中的每个元素进行处理
+        for data in data_list:
+            if 'message' in data:
+                # 尝试解码 message 字段
+                try:
+                    decoded_message = unquote(data['message'])
+                    data['message'] = decoded_message
+                except Exception as e:
+                    # 如果解码失败，使用原始值
+                    logger.warning(f"解码 message 失败: {str(e)}, 使用原始值: {data['message']}")
+
         try:
             validate_data(data_list)
         except ValueError as e:
