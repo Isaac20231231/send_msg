@@ -159,7 +159,7 @@ send_msg支持以下命令(支持一次性发多人,单人时列表只填一个�
 
 ## 更新日志
 ### V2.3 （2024-09-05）
-- 1.增加channel判断，兼容win版本机器人的ntchat发送消息 https://github.com/Tishon1532/chatgpt-on-wechat-win
+- 1.增加channel判断，兼容win版本机器人的ntchat发送消息（https://github.com/Tishon1532/chatgpt-on-wechat-win），
 - 支持itchat和ntchat两种channel类型，注意ntchat目前还没解决群聊@所有人的场景，只能@单个人，另外ntchat的receiver_name只支持填写微信名字
 
 ### V2.2 （2024-08-15）
@@ -203,3 +203,6 @@ send_msg支持以下命令(支持一次性发多人,单人时列表只填一个�
 开源不易，如果您觉得这个项目对您有帮助，可以请作者喝杯咖啡，谢谢！<br>
 <img src="wx.png" width="200" >
 <img src="zfb.png" width="200">
+
+## 其他
+插件已支持企业微信wework和paid协议gewechat，这两部分源码因有人付费单独开发，所以不开源，有需要的可以联系作者购买。
